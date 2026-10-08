@@ -1,0 +1,436 @@
+{
+ "config": {
+  "step": {
+   "user": {
+    "title": "HOLM LaMetric",
+    "description": "Une intégration LaMetric officielle est déjà configurée : ses réglages peuvent être repris.",
+    "menu_options": {
+     "reuse": "Reprendre les réglages de l'intégration LaMetric officielle",
+     "manual": "Saisir l'adresse et la clé d'API"
+    }
+   },
+   "manual": {
+    "title": "Connexion au LaMetric",
+    "description": "La clé d'API se trouve sur developer.lametric.com, rubrique « Devices ».",
+    "data": {
+     "host": "Adresse IP ou nom",
+     "api_key": "Clé d'API"
+    }
+   },
+   "reuse": {
+    "title": "Reprendre un LaMetric",
+    "data": {
+     "official_entry": "LaMetric"
+    }
+   }
+  },
+  "error": {
+   "cannot_connect": "LaMetric injoignable à cette adresse",
+   "invalid_auth": "Clé d'API refusée"
+  },
+  "abort": {
+   "already_configured": "Ce LaMetric est déjà configuré (adresse et clé mises à jour)"
+  }
+ },
+ "options": {
+  "step": {
+   "init": {
+    "title": "Options HOLM LaMetric",
+    "data": {
+     "scan_interval": "Fréquence de lecture de l'état",
+     "mydata_widget": "Appli My Data utilisée pour l'affichage continu"
+    },
+    "description": "L'appli « My Data DIY » ({package}) doit être installée sur le LaMetric et réglée en HTTP Push (local)."
+   }
+  }
+ },
+ "entity": {
+  "number": {
+   "brightness": {
+    "name": "Luminosité"
+   },
+   "volume": {
+    "name": "Volume"
+   }
+  },
+  "select": {
+   "brightness_mode": {
+    "name": "Mode de luminosité",
+    "state": {
+     "auto": "Automatique",
+     "manual": "Manuel"
+    }
+   },
+   "device_mode": {
+    "name": "Défilement des applis",
+    "state": {
+     "auto": "Automatique",
+     "manual": "Manuel",
+     "schedule": "Planning LaMetric",
+     "kiosk": "Kiosque"
+    }
+   },
+   "active_app": {
+    "name": "Appli affichée"
+   }
+  },
+  "switch": {
+   "bluetooth": {
+    "name": "Bluetooth"
+   },
+   "screensaver": {
+    "name": "Économiseur d'écran"
+   },
+   "programmes": {
+    "name": "Programmes"
+   },
+   "night_mode": {
+    "name": "Mode nuit"
+   }
+  },
+  "button": {
+   "next_app": {
+    "name": "Appli suivante"
+   },
+   "prev_app": {
+    "name": "Appli précédente"
+   },
+   "dismiss_current": {
+    "name": "Effacer la notification"
+   },
+   "dismiss_all": {
+    "name": "Effacer toutes les notifications"
+   }
+  },
+  "sensor": {
+   "wifi_signal": {
+    "name": "Signal Wi-Fi"
+   },
+   "ip_address": {
+    "name": "Adresse IP"
+   },
+   "firmware": {
+    "name": "Logiciel"
+   },
+   "current_app": {
+    "name": "Appli en cours"
+   },
+   "queue": {
+    "name": "Notifications en attente"
+   },
+   "active_programmes": {
+    "name": "Programmes actifs"
+   }
+  },
+  "notify": {
+   "notify": {
+    "name": "Notification"
+   }
+  }
+ },
+ "selector": {
+  "priority": {
+   "options": {
+    "info": "Info",
+    "warning": "Importante",
+    "critical": "Critique (réveille l'écran)"
+   }
+  },
+  "icon_type": {
+   "options": {
+    "none": "Aucun",
+    "info": "Info",
+    "alert": "Alerte"
+   }
+  },
+  "timer_action": {
+   "options": {
+    "start": "Démarrer",
+    "pause": "Pause",
+    "reset": "Remise à zéro"
+   }
+  },
+  "radio_action": {
+   "options": {
+    "play": "Lecture",
+    "stop": "Arrêt",
+    "next": "Station suivante",
+    "prev": "Station précédente"
+   }
+  },
+  "clockface": {
+   "options": {
+    "weather": "Météo",
+    "page_a_day": "Éphéméride",
+    "none": "Aucun"
+   }
+  },
+  "programme_action": {
+   "options": {
+    "enable": "Activer",
+    "disable": "Désactiver",
+    "send": "Afficher maintenant (notification)"
+   }
+  }
+ },
+ "services": {
+  "notify": {
+   "name": "Notifier",
+   "description": "Envoie une notification au LaMetric : texte, jauge ou graphique, son, priorité.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "message": {
+     "name": "Message",
+     "description": "Texte (modèles acceptés)."
+    },
+    "icon": {
+     "name": "Icône",
+     "description": "Code d'icône LaMetric (i1234, a1234) du message."
+    },
+    "frames": {
+     "name": "Écrans",
+     "description": "Liste d'écrans : {text, icon}, {type: goal, entity, end}, {type: chart, entity, hours}…"
+    },
+    "priority": {
+     "name": "Priorité",
+     "description": "« Critique » s'affiche même en veille."
+    },
+    "icon_type": {
+     "name": "Pictogramme",
+     "description": "Pictogramme affiché avant la notification."
+    },
+    "sound": {
+     "name": "Son",
+     "description": "Son LaMetric, ou adresse d'un MP3."
+    },
+    "repeat": {
+     "name": "Répétitions du son",
+     "description": "0 = en boucle tant que la notification est affichée."
+    },
+    "cycles": {
+     "name": "Répétitions",
+     "description": "Nombre de passages des écrans ; 0 = jusqu'à effacement."
+    },
+    "lifetime": {
+     "name": "Durée de vie",
+     "description": "Secondes avant suppression si elle n'a pas pu s'afficher."
+    },
+    "ignore_night": {
+     "name": "Ignorer le mode nuit",
+     "description": "Envoie même pendant le mode nuit."
+    }
+   }
+  },
+  "dismiss": {
+   "name": "Effacer les notifications",
+   "description": "Efface la notification affichée, une notification précise ou toutes.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "all": {
+     "name": "Toutes",
+     "description": "Efface toute la file."
+    },
+    "id": {
+     "name": "Identifiant",
+     "description": "Notification à effacer."
+    }
+   }
+  },
+  "activate_app": {
+   "name": "Afficher une appli",
+   "description": "Passe le LaMetric sur une appli.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "app": {
+     "name": "Appli",
+     "description": "Nom affiché (Horloge, Météo, Radio…)."
+    },
+    "package": {
+     "name": "Paquet",
+     "description": "Identifiant de l'appli (com.lametric.weather)."
+    },
+    "widget": {
+     "name": "Widget",
+     "description": "Identifiant du widget, si l'appli en a plusieurs."
+    }
+   }
+  },
+  "app_action": {
+   "name": "Action d'appli",
+   "description": "Déclenche une action d'une appli du LaMetric.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "package": {
+     "name": "Paquet",
+     "description": "Identifiant de l'appli."
+    },
+    "action": {
+     "name": "Action",
+     "description": "Identifiant de l'action."
+    },
+    "widget": {
+     "name": "Widget",
+     "description": "Identifiant du widget."
+    },
+    "params": {
+     "name": "Paramètres",
+     "description": "Paramètres de l'action."
+    },
+    "activate": {
+     "name": "Afficher l'appli",
+     "description": "Passe sur l'appli après l'action."
+    }
+   }
+  },
+  "alarm": {
+   "name": "Réveil",
+   "description": "Règle le réveil de l'horloge.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "enabled": {
+     "name": "Actif",
+     "description": "Active ou coupe le réveil."
+    },
+    "time": {
+     "name": "Heure",
+     "description": "Heure du réveil."
+    },
+    "wake_with_radio": {
+     "name": "Réveil en radio",
+     "description": "Réveil avec la radio."
+    },
+    "activate": {
+     "name": "Afficher l'horloge",
+     "description": "Passe sur l'horloge."
+    }
+   }
+  },
+  "timer": {
+   "name": "Minuteur",
+   "description": "Lance, met en pause ou remet à zéro le minuteur.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "action": {
+     "name": "Action",
+     "description": "Action sur le minuteur."
+    },
+    "duration": {
+     "name": "Durée",
+     "description": "Durée du minuteur (au démarrage)."
+    }
+   }
+  },
+  "stopwatch": {
+   "name": "Chronomètre",
+   "description": "Pilote le chronomètre.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "action": {
+     "name": "Action",
+     "description": "Action sur le chronomètre."
+    }
+   }
+  },
+  "radio": {
+   "name": "Radio",
+   "description": "Pilote la radio du LaMetric.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "action": {
+     "name": "Action",
+     "description": "Action sur la radio."
+    }
+   }
+  },
+  "clockface": {
+   "name": "Cadran de l'horloge",
+   "description": "Change le cadran de l'horloge ou y met une icône.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "type": {
+     "name": "Cadran",
+     "description": "Cadran prédéfini."
+    },
+    "icon": {
+     "name": "Icône",
+     "description": "Icône à la place du cadran (data:image… ou code)."
+    }
+   }
+  },
+  "push_frames": {
+   "name": "Afficher dans My Data",
+   "description": "Remplace pendant quelques minutes les écrans des programmes dans l'appli My Data.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "message": {
+     "name": "Message",
+     "description": "Texte (modèles acceptés)."
+    },
+    "icon": {
+     "name": "Icône",
+     "description": "Code d'icône LaMetric."
+    },
+    "frames": {
+     "name": "Écrans",
+     "description": "Liste d'écrans, comme pour Notifier."
+    },
+    "minutes": {
+     "name": "Durée",
+     "description": "Minutes d'affichage avant retour aux programmes."
+    },
+    "activate": {
+     "name": "Afficher l'appli",
+     "description": "Passe le LaMetric sur My Data."
+    }
+   }
+  },
+  "programme": {
+   "name": "Programme",
+   "description": "Active, désactive ou affiche tout de suite un programme.",
+   "fields": {
+    "device": {
+     "name": "LaMetric",
+     "description": "Facultatif s'il n'y en a qu'un."
+    },
+    "programme": {
+     "name": "Programme",
+     "description": "Nom ou identifiant du programme."
+    },
+    "action": {
+     "name": "Action",
+     "description": "Ce qu'il faut faire."
+    }
+   }
+  }
+ }
+}

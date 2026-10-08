@@ -1,0 +1,204 @@
+notify:
+  fields:
+    device: &device
+      selector:
+        config_entry:
+          integration: lametric_holm
+    message:
+      example: "Production solaire : {{ states('sensor.solaire') }} W"
+      selector:
+        text:
+          multiline: true
+    icon:
+      example: "i2867"
+      selector:
+        text:
+    frames:
+      example: '[{"text": "Bonjour", "icon": "i2867"}, {"type": "goal", "entity": "sensor.batterie", "end": 100}]'
+      selector:
+        object:
+    priority:
+      default: info
+      selector:
+        select:
+          options: [info, warning, critical]
+          translation_key: priority
+    icon_type:
+      default: none
+      selector:
+        select:
+          options: [none, info, alert]
+          translation_key: icon_type
+    sound:
+      selector:
+        select:
+          custom_value: true
+          options: [notification, notification2, notification3, notification4, positive1, positive2, positive3,
+                    positive4, positive5, positive6, negative1, negative2, negative3, negative4, negative5, win,
+                    win2, lose1, lose2, cash, letter_email, knock-knock, open_door, bicycle, car, cat, dog, dog2,
+                    energy, statistic, thunder, water1, water2, wind, wind_short, alarm1, alarm2, alarm3, alarm4,
+                    alarm5, alarm6, alarm7, alarm8, alarm9, alarm10, alarm11, alarm12, alarm13]
+    repeat:
+      default: 1
+      selector:
+        number: {min: 0, max: 10}
+    cycles:
+      default: 1
+      selector:
+        number: {min: 0, max: 50}
+    lifetime:
+      selector:
+        number: {min: 1, max: 86400, unit_of_measurement: s, mode: box}
+    ignore_night:
+      default: false
+      selector:
+        boolean:
+
+dismiss:
+  fields:
+    device: *device
+    all:
+      default: false
+      selector:
+        boolean:
+    id:
+      selector:
+        text:
+
+activate_app:
+  fields:
+    device: *device
+    app:
+      example: "Météo"
+      selector:
+        text:
+    package:
+      example: "com.lametric.weather"
+      selector:
+        text:
+    widget:
+      selector:
+        text:
+
+app_action:
+  fields:
+    device: *device
+    package:
+      required: true
+      example: "com.lametric.countdown"
+      selector:
+        text:
+    action:
+      required: true
+      example: "countdown.start"
+      selector:
+        text:
+    widget:
+      selector:
+        text:
+    params:
+      selector:
+        object:
+    activate:
+      default: true
+      selector:
+        boolean:
+
+alarm:
+  fields:
+    device: *device
+    enabled:
+      default: true
+      selector:
+        boolean:
+    time:
+      selector:
+        time:
+    wake_with_radio:
+      selector:
+        boolean:
+    activate:
+      default: false
+      selector:
+        boolean:
+
+timer:
+  fields:
+    device: *device
+    action:
+      default: start
+      selector:
+        select:
+          options: [start, pause, reset]
+          translation_key: timer_action
+    duration:
+      selector:
+        duration:
+
+stopwatch:
+  fields:
+    device: *device
+    action:
+      required: true
+      selector:
+        select:
+          options: [start, pause, reset]
+          translation_key: timer_action
+
+radio:
+  fields:
+    device: *device
+    action:
+      required: true
+      selector:
+        select:
+          options: [play, stop, next, prev]
+          translation_key: radio_action
+
+clockface:
+  fields:
+    device: *device
+    type:
+      default: weather
+      selector:
+        select:
+          options: [weather, page_a_day, none]
+          translation_key: clockface
+    icon:
+      selector:
+        text:
+
+push_frames:
+  fields:
+    device: *device
+    message:
+      selector:
+        text:
+    icon:
+      selector:
+        text:
+    frames:
+      selector:
+        object:
+    minutes:
+      default: 5
+      selector:
+        number: {min: 0.5, max: 1440, step: 0.5, unit_of_measurement: min, mode: box}
+    activate:
+      default: true
+      selector:
+        boolean:
+
+programme:
+  fields:
+    device: *device
+    programme:
+      required: true
+      selector:
+        text:
+    action:
+      default: enable
+      selector:
+        select:
+          options: [enable, disable, send]
+          translation_key: programme_action

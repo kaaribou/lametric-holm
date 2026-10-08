@@ -1,0 +1,14 @@
+{
+  "domain": "lametric_holm",
+  "name": "HOLM LaMetric",
+  "after_dependencies": ["lovelace", "recorder", "sun", "lametric"],
+  "codeowners": ["@kaaribou"],
+  "config_flow": true,
+  "dependencies": ["http", "frontend", "websocket_api"],
+  "documentation": "https://github.com/kaaribou/lametric-holm",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/kaaribou/lametric-holm/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}
