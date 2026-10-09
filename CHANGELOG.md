@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- **iPhone / iPad : la page ne remonte plus toute seule.** Quand la carte se redessinait (à chaque mise à jour du LaMetric, toutes les 30 s, ou à chaque réglage), la page pouvait remonter d'un coup sur iOS (Safari et application Home Assistant). La carte garde maintenant sa hauteur pendant qu'elle se redessine, et la position de défilement est conservée.
+
 ## 1.1.0
 
 - **Choix des entités plus simple** : une fenêtre de recherche par nom, pièce ou identifiant, avec des filtres (capteurs, météo, binaires, climat…), l'icône et l'état de chaque entité. Remplace la liste déroulante des identifiants.

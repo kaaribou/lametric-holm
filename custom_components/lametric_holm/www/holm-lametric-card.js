@@ -4,7 +4,28 @@
  *   title: LaMetric      tab: screen | programmes | notify | settings      view: full | screen      show_frame: true
  */
 (() => {
-const VERSION = "1.1.0";
+const VERSION = "1.1.1";
+// Garde la position de défilement pendant un nouveau rendu complet de la carte (iPhone / iPad : WebKit n'a pas de
+// « scroll anchoring » et la page remontait d'un coup). On fige la hauteur de la carte et on remet le défilement en place.
+const keepScroll = (host, fn) => {
+  const saved = [];
+  let n = host;
+  while (n) {
+    n = n.assignedSlot || n.parentNode || n.host;
+    if (n && n.nodeType === 1 && n.scrollHeight > n.clientHeight) saved.push([n, n.scrollTop]);
+  }
+  const se = document.scrollingElement;
+  if (se) saved.push([se, se.scrollTop]);
+  const h = host.offsetHeight;
+  if (h) host.style.minHeight = `${h}px`;
+  try { return fn(); } finally {
+    const restore = () => saved.forEach(([el, t]) => { if (Math.abs(el.scrollTop - t) > 1) el.scrollTop = t; });
+    restore();
+    requestAnimationFrame(() => { restore(); host.style.minHeight = ""; requestAnimationFrame(restore); });
+    setTimeout(() => { host.style.minHeight = ""; }, 500);   // page en arrière-plan : pas d'image affichée, donc pas de requestAnimationFrame
+  }
+};
+
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const fold = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -221,6 +242,9 @@ class HolmLaMetricCard extends HTMLElement {
 
   // ---------------------------------------------------------------- rendu principal
   _render() {
+    return keepScroll(this, () => this._renderNow());
+  }
+  _renderNow() {
     const root = this.shadowRoot && this.shadowRoot.getElementById("main");
     if (!root) return;
     if (this._typing() || this._sliding) { this._dirty = true; return; }
