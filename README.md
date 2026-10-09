@@ -129,9 +129,11 @@ Un programme, c'est **quoi afficher** (des écrans) et **quand** (jours, plages,
 
 | Type | Contenu |
 |---|---|
-| **Texte** | Un texte fixe, un modèle (`{{ states('sensor.x') }}`), ou la valeur d'une entité. Avec une entité, `{value}` et `{unit}` se placent où vous voulez (`Salon {value}°`) ; laissé vide, le texte affiche la valeur et son unité. Décimales réglables, option « masquer si zéro ». |
+| **Texte** | Un texte fixe, un modèle (`{{ states('sensor.x') }}`), ou la valeur d'une entité (son état ou l'un de ses attributs, par exemple la température d'une entité météo). Avec une entité, `{value}` et `{unit}` se placent où vous voulez (`Salon {value}°`) ; laissé vide, le texte affiche la valeur et son unité. Décimales réglables, option « masquer si zéro ». |
 | **Jauge** | La valeur d'une entité entre un début et un objectif, avec une barre de progression. |
 | **Graphique** | L'historique d'une entité sur les X dernières heures, en barres. |
+
+Les entités se choisissent dans une fenêtre de recherche (nom, pièce ou identifiant, filtres par type). Une fois l'entité choisie, une liste propose d'utiliser son **état** ou l'un de ses **attributs** : pour une entité météo, la température, l'humidité, la pression ou le vent ; l'unité suit automatiquement.
 
 Chaque écran peut avoir une icône LaMetric : cliquez sur la case de l'icône et cherchez par nom (en anglais : *sun*, *battery*, *car*…), ou saisissez directement son code (`i1234`, `a1234`).
 
@@ -139,7 +141,7 @@ Chaque écran peut avoir une icône LaMetric : cliquez sur la case de l'icône e
 
 - **Jours** de la semaine.
 - **Plages horaires** : début et fin à une heure fixe, ou au lever / coucher du soleil avec un décalage en minutes. Une plage peut passer minuit (22:30 → 07:00). Sans plage, le programme est actif toute la journée. Raccourcis : *Le jour*, *La nuit*, *Matin*, *Soirée*.
-- **Conditions** sur des entités (=, ≠, >, <, ≥, ≤) : toutes doivent être vraies. Raccourcis : *Soleil levé*, *Quelqu'un à la maison*.
+- **Conditions** sur des entités ou leurs attributs (=, ≠, >, <, ≥, ≤) : toutes doivent être vraies. Raccourcis : *Soleil levé*, *Quelqu'un à la maison*.
 
 L'aperçu en haut de l'éditeur affiche les vraies valeurs, comme sur le LaMetric.
 

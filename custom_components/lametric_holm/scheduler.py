@@ -13,6 +13,7 @@ filtre les notifications (priorité minimale, silence) et peut baisser la lumino
 from __future__ import annotations
 
 import copy
+from functools import partial
 import hashlib
 import json
 import logging
@@ -311,7 +312,8 @@ class Scheduler:
             st = self.hass.states.get(c.get("entity") or "")
             if st is None:
                 return False
-            if not _compare(st.state, c.get("op", "eq"), c.get("value")):
+            val = st.attributes.get(c["attribute"]) if c.get("attribute") else st.state
+            if not _compare("" if val is None else str(val), c.get("op", "eq"), c.get("value")):
                 return False
         return True
 
@@ -359,15 +361,25 @@ class Scheduler:
         except Exception as err:  # noqa: BLE001 — un modèle faux ne doit pas tout bloquer
             return f"⚠ {err}"[:60]
 
-    def _entity_value(self, entity: str, decimals: Any = None) -> tuple[str, str, float | None]:
+    def _entity_value(self, entity: str, decimals: Any = None, attribute: str | None = None) -> tuple[str, str, float | None]:
         st = self.hass.states.get(entity or "")
         if st is None:
             return "?", "", None
-        unit = st.attributes.get("unit_of_measurement") or ""
+        if attribute:
+            raw = st.attributes.get(attribute)
+            unit = attr_unit(st, attribute)
+        else:
+            raw = st.state
+            unit = st.attributes.get("unit_of_measurement") or ""
+        if raw is None:
+            return "?", unit, None
         try:
-            num = float(st.state)
-        except ValueError:
-            return st.state, unit, None
+            num = float(raw)
+        except (ValueError, TypeError):
+            text = str(raw)
+            if not attribute and st.domain == "weather":
+                text = WEATHER_FR.get(text, text)
+            return text, unit, None
         if decimals not in (None, ""):
             d = int(decimals)
             txt = f"{num:.{d}f}" if d > 0 else str(int(round(num)))
@@ -385,7 +397,7 @@ class Scheduler:
                 if kind == "goal":
                     cur = f.get("current")
                     if f.get("entity"):
-                        _t, unit, num = self._entity_value(f["entity"])
+                        _t, unit, num = self._entity_value(f["entity"], None, f.get("attribute"))
                         cur = num if num is not None else 0
                         unit = f.get("unit") or unit
                     else:
@@ -396,7 +408,8 @@ class Scheduler:
                     fr = {"goalData": {"start": int(_num(f.get("start", 0))), "current": int(round(_num(cur))),
                                        "end": int(_num(f.get("end", 100))), "unit": str(unit)[:4]}}
                 elif kind == "chart":
-                    data = await self._chart(f.get("entity") or "", int(f.get("hours") or 12), int(f.get("points") or 16))
+                    data = await self._chart(f.get("entity") or "", int(f.get("hours") or 12), int(f.get("points") or 16),
+                                             f.get("attribute") or None)
                     if not data:
                         continue
                     fr = {"chartData": data}
@@ -404,7 +417,7 @@ class Scheduler:
                 else:
                     text = str(f.get("text") or "")
                     if f.get("entity"):
-                        val, unit, num = self._entity_value(f["entity"], f.get("decimals"))
+                        val, unit, num = self._entity_value(f["entity"], f.get("decimals"), f.get("attribute"))
                         if f.get("hide_if_zero") and (num == 0 or val in ("unavailable", "unknown")):
                             continue
                         if not text:
@@ -423,12 +436,12 @@ class Scheduler:
             out.append(fr)
         return out
 
-    async def _chart(self, entity: str, hours: int, points: int) -> list[int]:
+    async def _chart(self, entity: str, hours: int, points: int, attribute: str | None = None) -> list[int]:
         if not entity:
             return []
         hours = max(1, min(hours, 168))
         points = max(4, min(points, 36))
-        key = (entity, hours, points)
+        key = (entity, hours, points, attribute)
         hit = self._chart_cache.get(key)
         if hit and time.monotonic() - hit[0] < CHART_CACHE_S:
             return hit[1]
@@ -439,15 +452,24 @@ class Scheduler:
         end = dt_util.utcnow()
         start = end - timedelta(hours=hours)
         try:
-            res = await get_instance(self.hass).async_add_executor_job(
-                history.state_changes_during_period, self.hass, start, end, entity, True, False, None, True)
+            if attribute:   # un attribut change sans changer l'état : il faut toutes les mises à jour
+                res = await get_instance(self.hass).async_add_executor_job(partial(
+                    history.get_significant_states, self.hass, start, end, [entity],
+                    include_start_time_state=True, significant_changes_only=False, minimal_response=False,
+                    no_attributes=False))
+            else:
+                res = await get_instance(self.hass).async_add_executor_job(
+                    history.state_changes_during_period, self.hass, start, end, entity, True, False, None, True)
         except Exception as err:  # noqa: BLE001
             _LOGGER.debug("Historique indisponible pour %s : %s", entity, err)
             return []
         samples: list[tuple[datetime, float]] = []
         for st in res.get(entity, []):
             try:
-                samples.append((max(st.last_changed, start), float(st.state)))
+                if attribute:
+                    samples.append((max(st.last_updated, start), float(st.attributes.get(attribute))))
+                else:
+                    samples.append((max(st.last_changed, start), float(st.state)))
             except (ValueError, TypeError):
                 continue
         if not samples:
@@ -616,6 +638,32 @@ def norm_icon(value: Any) -> str | None:
     if not text:
         return None
     return f"i{text}" if text.isdigit() else text
+
+
+WEATHER_FR = {
+    "clear-night": "Nuit claire", "cloudy": "Nuageux", "exceptional": "Exceptionnel", "fog": "Brouillard",
+    "hail": "Grêle", "lightning": "Orage", "lightning-rainy": "Orage", "partlycloudy": "Éclaircies",
+    "pouring": "Averses", "rainy": "Pluie", "snowy": "Neige", "snowy-rainy": "Neige/pluie", "sunny": "Soleil",
+    "windy": "Vent", "windy-variant": "Vent",
+}
+
+_ATTR_UNIT_KEYS = {
+    "temperature": "temperature_unit", "apparent_temperature": "temperature_unit", "dew_point": "temperature_unit",
+    "current_temperature": "temperature_unit", "pressure": "pressure_unit", "wind_speed": "wind_speed_unit",
+    "wind_gust_speed": "wind_speed_unit", "visibility": "visibility_unit", "precipitation": "precipitation_unit",
+}
+
+
+def attr_unit(st, attribute: str) -> str:
+    """Unité d'un attribut : météo (temperature_unit…), %, ou rien."""
+    key = _ATTR_UNIT_KEYS.get(attribute)
+    if key and st.attributes.get(key):
+        return str(st.attributes[key])
+    if attribute in ("temperature", "current_temperature", "target_temperature", "apparent_temperature", "dew_point"):
+        return "°C"
+    if attribute in ("humidity", "current_humidity", "cloud_coverage", "uv_index_percent", "battery_level", "brightness_pct"):
+        return "%" if attribute != "uv_index_percent" else ""
+    return ""
 
 
 def mono_now() -> float:

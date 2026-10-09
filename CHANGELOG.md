@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0
+
+- **Choix des entités plus simple** : une fenêtre de recherche par nom, pièce ou identifiant, avec des filtres (capteurs, météo, binaires, climat…), l'icône et l'état de chaque entité. Remplace la liste déroulante des identifiants.
+- **Attributs** : un écran (texte, jauge, graphique) ou une condition peut utiliser un attribut de l'entité plutôt que son état, par exemple la **température** ou l'**humidité** d'une entité météo. L'unité suit (°C, %, hPa, km/h…). Le graphique d'un attribut lit tout l'historique de l'entité.
+- L'état d'une entité **météo** s'affiche en français (Pluie, Éclaircies, Soleil…).
+- Liste des applis : Minuteur, Radio et Chronomètre réapparaissent ; une appli sans nom prend celui de son éditeur.
+
 ## 1.0.0 — première version
 
 - Intégration `lametric_holm` pour le **LaMetric Time**, par l'API locale (HTTPS 4343, repli HTTP 8080).

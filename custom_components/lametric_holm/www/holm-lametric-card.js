@@ -4,7 +4,7 @@
  *   title: LaMetric      tab: screen | programmes | notify | settings      view: full | screen      show_frame: true
  */
 (() => {
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const fold = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -159,6 +159,17 @@ const fmtDays = (d) => {
   return s.map((i) => DAYS_LONG[i].slice(0, 3)).join(", ");
 };
 const fmtWindows = (w) => (!w || !w.length ? "toute la journée" : w.map((x) => `${fmtSpec(x.from)} → ${fmtSpec(x.to)}`).join(", "));
+const DOMAIN_ICON = { sensor: "mdi:eye", binary_sensor: "mdi:checkbox-blank-circle-outline", weather: "mdi:weather-partly-cloudy", climate: "mdi:thermostat",
+  light: "mdi:lightbulb", switch: "mdi:toggle-switch", cover: "mdi:window-shutter", person: "mdi:account", sun: "mdi:white-balance-sunny", input_number: "mdi:ray-vertex",
+  input_boolean: "mdi:toggle-switch-outline", input_select: "mdi:format-list-bulleted", input_text: "mdi:form-textbox", number: "mdi:ray-vertex", counter: "mdi:counter",
+  select: "mdi:format-list-bulleted", media_player: "mdi:speaker", device_tracker: "mdi:map-marker", zone: "mdi:map-marker-radius", fan: "mdi:fan", lock: "mdi:lock", vacuum: "mdi:robot-vacuum" };
+const ENT_FILTERS = [["all", "Tout"], ["sensor", "Capteurs"], ["weather", "Météo"], ["binary_sensor", "Binaires"], ["climate", "Climat"], ["other", "Autres"]];
+const ATTR_FR = { temperature: "Température", apparent_temperature: "Ressentie", humidity: "Humidité", pressure: "Pression", wind_speed: "Vent", wind_gust_speed: "Rafales",
+  wind_bearing: "Direction du vent", cloud_coverage: "Nuages", uv_index: "Indice UV", visibility: "Visibilité", dew_point: "Point de rosée", precipitation: "Pluie",
+  current_temperature: "Température actuelle", current_humidity: "Humidité actuelle", hvac_action: "Action", brightness: "Luminosité", battery_level: "Batterie",
+  elevation: "Élévation", azimuth: "Azimut", next_rising: "Prochain lever", next_setting: "Prochain coucher", media_title: "Titre", media_artist: "Artiste", volume_level: "Volume" };
+const ATTR_SKIP = new Set(["friendly_name", "icon", "entity_picture", "unit_of_measurement", "device_class", "state_class", "supported_features", "attribution", "editable", "id",
+  "temperature_unit", "pressure_unit", "wind_speed_unit", "visibility_unit", "precipitation_unit", "restored", "assumed_state", "options", "min", "max", "step", "mode", "icon_color"]);
 const getPath = (o, p) => p.split(".").reduce((a, k) => (a == null ? a : a[k]), o);
 const setPath = (o, p, v) => { const ks = p.split("."); let a = o; ks.slice(0, -1).forEach((k, i) => { if (a[k] == null) a[k] = /^\d+$/.test(ks[i + 1]) ? [] : {}; a = a[k]; }); a[ks[ks.length - 1]] = v; };
 
@@ -349,18 +360,75 @@ class HolmLaMetricCard extends HTMLElement {
     return `<span class="spec"><select data-s="${scope}" data-p="${path}.kind" data-r="1">${Object.entries(KIND).map(([k, v]) => `<option value="${k}" ${sp.kind === k ? "selected" : ""}>${v}</option>`).join("")}</select>
       ${sp.kind === "time" ? `<input type="time" data-s="${scope}" data-p="${path}.time" value="${esc(sp.time || "00:00")}">` : `<input type="number" class="num" step="5" data-s="${scope}" data-p="${path}.offset" data-t="num" value="${sp.offset || 0}" title="Décalage en minutes"><small>min</small>`}</span>`;
   }
-  _entityList() {
-    if (!this._ents || this._entsAt !== Object.keys(this._hass.states).length) {
-      this._ents = Object.keys(this._hass.states).filter((e) => /^(sensor|binary_sensor|input_number|input_boolean|input_select|input_text|number|switch|sun|weather|person|climate|light|cover|counter|select)\./.test(e)).sort();
-      this._entsAt = Object.keys(this._hass.states).length;
+  _entInfo(e) {
+    const h = this._hass, st = h.states[e];
+    if (!st) return null;
+    const reg = (h.entities || {})[e] || {};
+    const area = reg.area_id || ((h.devices || {})[reg.device_id] || {}).area_id;
+    const unit = st.attributes.unit_of_measurement || "";
+    return { id: e, name: st.attributes.friendly_name || e, area: area && h.areas && h.areas[area] ? h.areas[area].name : "",
+      icon: st.attributes.icon || DOMAIN_ICON[e.split(".")[0]] || "mdi:shape", state: `${st.state}${unit ? " " + unit : ""}` };
+  }
+  _entBtn(scope, path, value, placeholder) {
+    const i = value ? this._entInfo(value) : null;
+    return `<button class="entb ${value ? "" : "empty"}" data-a="epick" data-s="${scope}" data-p="${path}" title="${esc(value || "Choisir une entité")}">
+      <ha-icon icon="${i ? i.icon : "mdi:magnify"}"></ha-icon><span>${value ? `<b>${esc(i ? i.name : value)}</b><small>${esc(value)}${i && i.area ? " · " + esc(i.area) : ""}</small>` : `<b>${esc(placeholder)}</b>`}</span>
+      ${value ? `<i class="ex" data-a="eclear" data-s="${scope}" data-p="${path}" title="Retirer">×</i>` : ""}</button>`;
+  }
+  _attrSel(scope, path, entity, value, numericOnly) {
+    const st = this._hass.states[entity];
+    if (!st) return "";
+    const attrs = Object.entries(st.attributes).filter(([k, v]) => !ATTR_SKIP.has(k) && v != null && typeof v !== "object" && (!numericOnly || !isNaN(parseFloat(v))));
+    if (!attrs.length) return "";
+    const lbl = (k, v) => `${ATTR_FR[k] || k} (${String(v).slice(0, 18)})`;
+    return `<select class="attr" data-s="${scope}" data-p="${path}" title="Valeur à utiliser"><option value="">État (${esc(String(st.state).slice(0, 18))})</option>${attrs.map(([k, v]) => `<option value="${esc(k)}" ${value === k ? "selected" : ""}>${esc(lbl(k, v))}</option>`).join("")}</select>`;
+  }
+  _openEnts(scope, path) {
+    this._ep = { scope, path, q: "", f: "all" };
+    this._drawEnts();
+  }
+  _entResults() {
+    const ep = this._ep, h = this._hass, words = fold(ep.q).toLowerCase().split(/\s+/).filter(Boolean);
+    const main = ["sensor", "weather", "binary_sensor", "climate"];
+    const out = [];
+    for (const e of Object.keys(h.states)) {
+      const dom = e.split(".")[0];
+      if (ep.f !== "all" && (ep.f === "other" ? main.includes(dom) : dom !== ep.f)) continue;
+      if (["automation", "script", "scene", "update", "button", "event", "tts", "stt", "conversation", "todo", "image", "camera", "notify", "assist_satellite", "wake_word"].includes(dom)) continue;
+      const i = this._entInfo(e);
+      const hay = fold(`${i.name} ${e} ${i.area}`).toLowerCase();
+      if (words.length && !words.every((w) => hay.includes(w))) continue;
+      const score = words.length ? (fold(i.name).toLowerCase().startsWith(words[0]) ? 0 : 1) : 0;
+      out.push([score, i]);
+      if (out.length > 400) break;
     }
-    return `<datalist id="ents">${this._ents.map((e) => `<option value="${e}">${esc((this._hass.states[e].attributes || {}).friendly_name || "")}</option>`).join("")}</datalist>`;
+    out.sort((a, b) => a[0] - b[0] || a[1].name.localeCompare(b[1].name, "fr"));
+    return out.slice(0, 120).map((x) => x[1]);
+  }
+  _drawEnts(listOnly) {
+    let box = this.shadowRoot.getElementById("entpick");
+    if (!this._ep) { if (box) box.remove(); return; }
+    const ep = this._ep, res = this._entResults();
+    const list = `<div class="elist">${res.map((i) => `<button class="erow" data-a="eset" data-v="${esc(i.id)}"><ha-icon icon="${esc(i.icon)}"></ha-icon><span><b>${esc(i.name)}</b><small>${esc(i.id)}${i.area ? " · " + esc(i.area) : ""}</small></span><em>${esc(i.state)}</em></button>`).join("") || `<div class="muted pad">Aucune entité.</div>`}</div>`;
+    if (listOnly && box) {
+      box.querySelector(".el").innerHTML = list;
+      box.querySelectorAll(".efil button").forEach((b) => b.classList.toggle("otn", b.dataset.v === ep.f));
+      return;
+    }
+    if (!box) { box = document.createElement("div"); box.id = "entpick"; this.shadowRoot.appendChild(box); }
+    box.innerHTML = `<div class="ov top" data-a="eclose-bg"><div class="mdl small"><div class="mh"><b>Choisir une entité</b><button class="ib" data-a="eclose"><ha-icon icon="mdi:close"></ha-icon></button></div>
+      <div class="mb"><input class="grow wide" id="eq" placeholder="Rechercher par nom, pièce ou identifiant…" value="${esc(ep.q)}">
+        <div class="efil">${ENT_FILTERS.map(([k, l]) => `<button class="mini ${ep.f === k ? "otn" : ""}" data-a="efil" data-v="${k}">${l}</button>`).join("")}</div>
+        <div class="el">${list}</div></div></div></div>`;
+    const q = box.querySelector("#eq");
+    q.addEventListener("input", () => { ep.q = q.value; clearTimeout(this._eqT); this._eqT = setTimeout(() => this._drawEnts(true), 120); });
+    q.focus();
   }
   _framesEditor(frames, scope, base, textOnly = false) {
     const ic = (f, i) => `<button class="icb" data-a="icon" data-s="${scope}" data-p="${base}.${i}.icon" title="Choisir une icône">${iconUrl(f.icon) ? `<img src="${esc(iconUrl(f.icon))}" referrerpolicy="no-referrer">` : `<ha-icon icon="mdi:image-plus"></ha-icon>`}</button>`;
-    return `${this._entityList()}<div class="frames">${(frames || []).map((f, i) => {
+    return `<div class="frames">${(frames || []).map((f, i) => {
       const t = f.type || "text", p = `${base}.${i}`;
-      const ent = `<input list="ents" placeholder="Entité (facultatif)" data-s="${scope}" data-p="${p}.entity" value="${esc(f.entity || "")}">`;
+      const ent = this._entBtn(scope, `${p}.entity`, f.entity, "Entité (facultatif)") + (f.entity ? this._attrSel(scope, `${p}.attribute`, f.entity, f.attribute, t !== "text") : "");
       return `<div class="frame"><div class="fh"><span class="fn">${i + 1}</span>
         ${textOnly ? "" : `<select data-s="${scope}" data-a2="ftype" data-p="${p}.type" data-r="1"><option value="text" ${t === "text" ? "selected" : ""}>Texte</option><option value="goal" ${t === "goal" ? "selected" : ""}>Jauge</option><option value="chart" ${t === "chart" ? "selected" : ""}>Graphique</option></select>`}
         <span class="sp"></span>
@@ -402,9 +470,9 @@ class HolmLaMetricCard extends HTMLElement {
         ${p.windows.length ? p.windows.map((w, i) => `<div class="win">${this._spec("ed", `windows.${i}.from`, w.from)}<ha-icon icon="mdi:arrow-right"></ha-icon>${this._spec("ed", `windows.${i}.to`, w.to)}<button class="ib sm" data-a="wdel" data-i="${i}"><ha-icon icon="mdi:delete-outline"></ha-icon></button></div>`).join("") : `<div class="muted pad">Toute la journée.</div>`}
         <div class="bar"><button class="pill" data-a="wadd"><ha-icon icon="mdi:plus"></ha-icon>Ajouter une plage</button></div>
         <div class="sec"><b>Conditions</b><span class="muted">toutes doivent être vraies</span></div>
-        ${p.conditions.map((c, i) => `<div class="cond"><input list="ents" placeholder="Entité" data-s="ed" data-p="conditions.${i}.entity" value="${esc(c.entity || "")}">
+        ${p.conditions.map((c, i) => `<div class="cond">${this._entBtn("ed", `conditions.${i}.entity`, c.entity, "Entité")}${c.entity ? this._attrSel("ed", `conditions.${i}.attribute`, c.entity, c.attribute, false) : ""}
           <select data-s="ed" data-p="conditions.${i}.op">${Object.entries(OPS).map(([k, v]) => `<option value="${k}" ${c.op === k ? "selected" : ""}>${v}</option>`).join("")}</select>
-          <input class="num2" placeholder="valeur" data-s="ed" data-p="conditions.${i}.value" value="${esc(c.value ?? "")}"><span class="cv">${esc(this._stateOf(c.entity))}</span>
+          <input class="num2" placeholder="valeur" data-s="ed" data-p="conditions.${i}.value" value="${esc(c.value ?? "")}"><span class="cv">${esc(this._stateOf(c.entity, c.attribute))}</span>
           <button class="ib sm" data-a="cdel" data-i="${i}"><ha-icon icon="mdi:delete-outline"></ha-icon></button></div>`).join("")}
         <div class="bar"><button class="pill" data-a="cadd"><ha-icon icon="mdi:plus"></ha-icon>Ajouter une condition</button>
           <button class="mini" data-a="cpreset" data-v="above_horizon">Soleil levé</button><button class="mini" data-a="cpreset" data-v="home">Quelqu'un à la maison</button></div>
@@ -426,9 +494,10 @@ class HolmLaMetricCard extends HTMLElement {
     if (mb) mb.scrollTop = keepScroll;
     this._mount();
   }
-  _stateOf(e) {
+  _stateOf(e, attr) {
     const st = e && this._hass.states[e];
-    return st ? `actuel : ${st.state}` : "";
+    if (!st) return "";
+    return `actuel : ${attr ? (st.attributes[attr] ?? "–") : st.state}`;
   }
   _preview(scope) {
     clearTimeout(this["_pv" + scope]);
@@ -516,7 +585,7 @@ class HolmLaMetricCard extends HTMLElement {
     const el = e.target.closest("[data-a]");
     if (!el) return;
     const a = el.dataset.a, s = this._s;
-    if ((a === "close-bg" || a === "iclose-bg") && e.target !== el) return;
+    if ((a === "close-bg" || a === "iclose-bg" || a === "eclose-bg") && e.target !== el) return;
     try {
       switch (a) {
         case "tab": this._tab = el.dataset.v; this._render(); if (this._tab === "notify") this._preview("nt"); break;
@@ -572,6 +641,16 @@ class HolmLaMetricCard extends HTMLElement {
         case "fdel": { const arr = getPath(this._scope(el.dataset.s), el.dataset.b); arr.splice(+el.dataset.i, 1); this._redraw(el.dataset.s); break; }
         case "fmove": { const arr = getPath(this._scope(el.dataset.s), el.dataset.b), i = +el.dataset.i, j = i + +el.dataset.v; [arr[i], arr[j]] = [arr[j], arr[i]]; this._redraw(el.dataset.s); break; }
         case "icon": this._openIcons(el.dataset.s, el.dataset.p); break;
+        case "epick": if (e.target.closest(".ex")) break; this._openEnts(el.dataset.s, el.dataset.p); break;
+        case "eclear": { const sc = el.dataset.s; setPath(this._scope(sc), el.dataset.p, ""); setPath(this._scope(sc), el.dataset.p.replace(/entity$/, "attribute"), ""); this._redraw(sc); break; }
+        case "efil": this._ep.f = el.dataset.v; this._drawEnts(true); break;
+        case "eset": {
+          const { scope, path } = this._ep, obj = this._scope(scope);
+          setPath(obj, path, el.dataset.v);
+          setPath(obj, path.replace(/entity$/, "attribute"), "");
+          this._ep = null; this._drawEnts(); this._redraw(scope); break;
+        }
+        case "eclose": case "eclose-bg": this._ep = null; this._drawEnts(); break;
         case "ipick": case "icode": {
           const v = a === "icode" ? this.shadowRoot.getElementById("icode").value.trim() : el.dataset.v;
           setPath(this._scope(this._ip.scope), this._ip.path, v);
@@ -764,6 +843,25 @@ input[type=range] { flex:1; accent-color:var(--ac); padding:0; border:0; backgro
 .mh .title:focus { border-color:var(--bd); }
 .mb { padding:12px 14px; overflow:auto; flex:1; }
 .mf { display:flex; align-items:center; gap:8px; padding:10px 14px; border-top:1px solid var(--bd); }
+.entb { display:flex; align-items:center; gap:8px; flex:2; min-width:170px; text-align:left; border:1px solid var(--bd); background:var(--card-background-color, transparent); border-radius:10px; padding:5px 9px; position:relative; }
+.entb ha-icon { --mdc-icon-size:18px; color:var(--ac); flex:none; }
+.entb span { display:flex; flex-direction:column; min-width:0; flex:1; }
+.entb b { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.entb small { font-size:11px; color:var(--secondary-text-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.entb.empty b { color:var(--secondary-text-color); font-weight:500; }
+.entb .ex { font-style:normal; font-size:16px; line-height:1; padding:2px 5px; border-radius:6px; color:var(--secondary-text-color); }
+.entb .ex:hover { background:var(--sf); }
+select.attr { flex:1; min-width:120px; }
+.wide { width:100%; }
+.efil { display:flex; gap:5px; flex-wrap:wrap; margin:8px 0; }
+.elist { display:flex; flex-direction:column; gap:2px; }
+.erow { display:flex; align-items:center; gap:10px; border:0; background:none; border-radius:10px; padding:7px 8px; text-align:left; }
+.erow:hover { background:var(--sf); }
+.erow ha-icon { --mdc-icon-size:20px; color:var(--ac); flex:none; }
+.erow span { display:flex; flex-direction:column; flex:1; min-width:0; }
+.erow b { font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.erow small { font-size:11px; color:var(--secondary-text-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.erow em { font-style:normal; font-size:12px; color:var(--secondary-text-color); white-space:nowrap; max-width:35%; overflow:hidden; text-overflow:ellipsis; }
 .igrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(84px, 1fr)); gap:6px; }
 .ii { border:1px solid var(--bd); background:var(--sf); border-radius:10px; padding:6px 4px; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10.5px; }
 .ii img { width:32px; height:32px; image-rendering:pixelated; background:#111; border-radius:4px; }
