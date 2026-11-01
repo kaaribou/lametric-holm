@@ -1,0 +1,436 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HOLM LaMetric",
+        "description": "Er is al een officiële LaMetric-integratie ingesteld: de instellingen kunnen worden overgenomen.",
+        "menu_options": {
+          "reuse": "Instellingen van de officiële LaMetric-integratie overnemen",
+          "manual": "Adres en API-sleutel invoeren"
+        }
+      },
+      "manual": {
+        "title": "Verbinden met de LaMetric",
+        "description": "De API-sleutel staat op developer.lametric.com, onder ‘Devices’.",
+        "data": {
+          "host": "IP-adres of naam",
+          "api_key": "API-sleutel"
+        }
+      },
+      "reuse": {
+        "title": "Een LaMetric overnemen",
+        "data": {
+          "official_entry": "LaMetric"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "LaMetric niet bereikbaar op dit adres",
+      "invalid_auth": "API-sleutel geweigerd"
+    },
+    "abort": {
+      "already_configured": "Deze LaMetric is al ingesteld (adres en sleutel bijgewerkt)"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opties van HOLM LaMetric",
+        "data": {
+          "scan_interval": "Uitleesinterval van de status",
+          "mydata_widget": "My Data-app voor de doorlopende weergave"
+        },
+        "description": "De app ‘My Data DIY’ ({package}) moet op de LaMetric geïnstalleerd zijn en op HTTP Push (lokaal) staan."
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "brightness": {
+        "name": "Helderheid"
+      },
+      "volume": {
+        "name": "Volume"
+      }
+    },
+    "select": {
+      "brightness_mode": {
+        "name": "Helderheidsmodus",
+        "state": {
+          "auto": "Automatisch",
+          "manual": "Handmatig"
+        }
+      },
+      "device_mode": {
+        "name": "Apps doorlopen",
+        "state": {
+          "auto": "Automatisch",
+          "manual": "Handmatig",
+          "schedule": "LaMetric-schema",
+          "kiosk": "Kiosk"
+        }
+      },
+      "active_app": {
+        "name": "Getoonde app"
+      }
+    },
+    "switch": {
+      "bluetooth": {
+        "name": "Bluetooth"
+      },
+      "screensaver": {
+        "name": "Schermbeveiliging"
+      },
+      "programmes": {
+        "name": "Programma's"
+      },
+      "night_mode": {
+        "name": "Nachtmodus"
+      }
+    },
+    "button": {
+      "next_app": {
+        "name": "Volgende app"
+      },
+      "prev_app": {
+        "name": "Vorige app"
+      },
+      "dismiss_current": {
+        "name": "Melding wissen"
+      },
+      "dismiss_all": {
+        "name": "Alle meldingen wissen"
+      }
+    },
+    "sensor": {
+      "wifi_signal": {
+        "name": "Wifi-signaal"
+      },
+      "ip_address": {
+        "name": "IP-adres"
+      },
+      "firmware": {
+        "name": "Software"
+      },
+      "current_app": {
+        "name": "Huidige app"
+      },
+      "queue": {
+        "name": "Wachtende meldingen"
+      },
+      "active_programmes": {
+        "name": "Actieve programma's"
+      }
+    },
+    "notify": {
+      "notify": {
+        "name": "Melding"
+      }
+    }
+  },
+  "selector": {
+    "priority": {
+      "options": {
+        "info": "Info",
+        "warning": "Belangrijk",
+        "critical": "Kritiek (wekt het scherm)"
+      }
+    },
+    "icon_type": {
+      "options": {
+        "none": "Geen",
+        "info": "Info",
+        "alert": "Waarschuwing"
+      }
+    },
+    "timer_action": {
+      "options": {
+        "start": "Starten",
+        "pause": "Pauze",
+        "reset": "Resetten"
+      }
+    },
+    "radio_action": {
+      "options": {
+        "play": "Afspelen",
+        "stop": "Stop",
+        "next": "Volgende zender",
+        "prev": "Vorige zender"
+      }
+    },
+    "clockface": {
+      "options": {
+        "weather": "Weer",
+        "page_a_day": "Kalender",
+        "none": "Geen"
+      }
+    },
+    "programme_action": {
+      "options": {
+        "enable": "Inschakelen",
+        "disable": "Uitschakelen",
+        "send": "Nu tonen (melding)"
+      }
+    }
+  },
+  "services": {
+    "notify": {
+      "name": "Melden",
+      "description": "Stuurt een melding naar de LaMetric: tekst, meter of grafiek, geluid, prioriteit.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "message": {
+          "name": "Bericht",
+          "description": "Tekst (sjablonen toegestaan)."
+        },
+        "icon": {
+          "name": "Pictogram",
+          "description": "LaMetric-pictogramcode (i1234, a1234) van het bericht."
+        },
+        "frames": {
+          "name": "Schermen",
+          "description": "Lijst met schermen: {text, icon}, {type: goal, entity, end}, {type: chart, entity, hours}…"
+        },
+        "priority": {
+          "name": "Prioriteit",
+          "description": "‘Kritiek’ wordt ook in stand-by getoond."
+        },
+        "icon_type": {
+          "name": "Pictogram",
+          "description": "Pictogram dat vóór de melding wordt getoond."
+        },
+        "sound": {
+          "name": "Geluid",
+          "description": "LaMetric-geluid of adres van een MP3."
+        },
+        "repeat": {
+          "name": "Herhalingen van het geluid",
+          "description": "0 = herhalen zolang de melding wordt getoond."
+        },
+        "cycles": {
+          "name": "Herhalingen",
+          "description": "Aantal keer dat de schermen worden doorlopen; 0 = tot wissen."
+        },
+        "lifetime": {
+          "name": "Levensduur",
+          "description": "Seconden vóór verwijdering als ze niet getoond kon worden."
+        },
+        "ignore_night": {
+          "name": "Nachtmodus negeren",
+          "description": "Verzendt ook in nachtmodus."
+        }
+      }
+    },
+    "dismiss": {
+      "name": "Meldingen wissen",
+      "description": "Wist de getoonde melding, een specifieke of alle.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "all": {
+          "name": "Alle",
+          "description": "Wist de hele wachtrij."
+        },
+        "id": {
+          "name": "ID",
+          "description": "Te wissen melding."
+        }
+      }
+    },
+    "activate_app": {
+      "name": "Een app tonen",
+      "description": "Zet de LaMetric op een app.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "app": {
+          "name": "App",
+          "description": "Weergavenaam (Klok, Weer, Radio…)."
+        },
+        "package": {
+          "name": "Pakket",
+          "description": "App-ID (com.lametric.weather)."
+        },
+        "widget": {
+          "name": "Widget",
+          "description": "Widget-ID, als de app er meerdere heeft."
+        }
+      }
+    },
+    "app_action": {
+      "name": "App-actie",
+      "description": "Activeert een actie van een LaMetric-app.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "package": {
+          "name": "Pakket",
+          "description": "App-ID."
+        },
+        "action": {
+          "name": "Actie",
+          "description": "Actie-ID."
+        },
+        "widget": {
+          "name": "Widget",
+          "description": "Widget-ID."
+        },
+        "params": {
+          "name": "Parameters",
+          "description": "Parameters van de actie."
+        },
+        "activate": {
+          "name": "App tonen",
+          "description": "Schakelt na de actie naar de app."
+        }
+      }
+    },
+    "alarm": {
+      "name": "Wekker",
+      "description": "Stelt de wekker van de klok in.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "enabled": {
+          "name": "Aan",
+          "description": "Zet de wekker aan of uit."
+        },
+        "time": {
+          "name": "Tijd",
+          "description": "Wektijd."
+        },
+        "wake_with_radio": {
+          "name": "Wekken met radio",
+          "description": "Wekken met de radio."
+        },
+        "activate": {
+          "name": "Klok tonen",
+          "description": "Schakelt naar de klok."
+        }
+      }
+    },
+    "timer": {
+      "name": "Timer",
+      "description": "Start, pauzeert of reset de timer.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "action": {
+          "name": "Actie",
+          "description": "Timeractie."
+        },
+        "duration": {
+          "name": "Duur",
+          "description": "Duur van de timer (bij starten)."
+        }
+      }
+    },
+    "stopwatch": {
+      "name": "Stopwatch",
+      "description": "Bedient de stopwatch.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "action": {
+          "name": "Actie",
+          "description": "Stopwatchactie."
+        }
+      }
+    },
+    "radio": {
+      "name": "Radio",
+      "description": "Bedient de radio van de LaMetric.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "action": {
+          "name": "Actie",
+          "description": "Radioactie."
+        }
+      }
+    },
+    "clockface": {
+      "name": "Wijzerplaat",
+      "description": "Wijzigt de wijzerplaat of zet er een pictogram op.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "type": {
+          "name": "Wijzerplaat",
+          "description": "Vooraf ingestelde wijzerplaat."
+        },
+        "icon": {
+          "name": "Pictogram",
+          "description": "Pictogram in plaats van de wijzerplaat (data:image… of code)."
+        }
+      }
+    },
+    "push_frames": {
+      "name": "Tonen in My Data",
+      "description": "Vervangt een paar minuten de programmaschermen in de My Data-app.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "message": {
+          "name": "Bericht",
+          "description": "Tekst (sjablonen toegestaan)."
+        },
+        "icon": {
+          "name": "Pictogram",
+          "description": "LaMetric-pictogramcode."
+        },
+        "frames": {
+          "name": "Schermen",
+          "description": "Lijst met schermen, zoals bij Melden."
+        },
+        "minutes": {
+          "name": "Duur",
+          "description": "Minuten weergave voordat de programma's terugkeren."
+        },
+        "activate": {
+          "name": "App tonen",
+          "description": "Zet de LaMetric op My Data."
+        }
+      }
+    },
+    "programme": {
+      "name": "Programma",
+      "description": "Schakelt een programma in, uit of toont het meteen.",
+      "fields": {
+        "device": {
+          "name": "LaMetric",
+          "description": "Optioneel als er maar één is."
+        },
+        "programme": {
+          "name": "Programma",
+          "description": "Naam of ID van het programma."
+        },
+        "action": {
+          "name": "Actie",
+          "description": "Wat er moet gebeuren."
+        }
+      }
+    }
+  }
+}

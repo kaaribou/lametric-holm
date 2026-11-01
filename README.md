@@ -4,6 +4,8 @@
 ![Version](https://img.shields.io/github/v/release/kaaribou/lametric-holm)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.8%2B-03a9f4)
 
+🇫🇷 Français · [🇬🇧 English](README.en.md)
+
 **Tout le LaMetric Time dans Home Assistant, et des programmes pour décider quoi afficher, quand.**
 
 HOLM LaMetric remplace l'intégration LaMetric officielle. Elle pilote l'horloge par son **API locale** : luminosité, volume, applis, réveil, minuteur, radio, notifications riches. Elle ajoute surtout des **programmes** : la production solaire défile toute la journée mais plus le soir, la température extérieure reste affichée, la batterie de la maison apparaît en fin de journée, un rappel arrive le mardi soir… le tout réglé depuis une carte, sans YAML.
@@ -29,6 +31,12 @@ HOLM LaMetric remplace l'intégration LaMetric officielle. Elle pilote l'horloge
 - 🔔 **Notifications riches** : plusieurs écrans, priorité, son (ou MP3), répétitions, durée de vie. Le mode nuit s'applique aussi à vos automatisations, si vous le souhaitez.
 - 🎛️ **Tout l'appareil** : luminosité et mode auto, volume, Bluetooth, économiseur d'écran, appli affichée, appli suivante ou précédente, réveil, minuteur, chronomètre, radio, cadran de l'horloge.
 - 👀 **La carte** montre en direct ce qu'affiche le LaMetric, sur un écran LED fidèle (37 × 8), avec les réglages rapides et la file de notifications.
+
+
+### 🆕 Nouveautés de la 1.2.0
+
+- 🌍 **8 langues** : l'intégration (configuration, options, entités, actions) est traduite en français, anglais, allemand, espagnol, italien, néerlandais, portugais et polonais, selon la langue de Home Assistant. La carte **HOLM LaMetric** aussi, éditeur compris ; son option `language` permet d'imposer une langue.
+- 🇬🇧 README en anglais.
 
 ---
 
@@ -102,6 +110,7 @@ type: custom:holm-lametric-card
 | `tab` | onglet à l'ouverture : `screen` · `programmes` · `notify` · `settings` | `screen` |
 | `show_frame` | `false` pour une carte sans cadre | `true` |
 | `entry_id` | pour viser un LaMetric précis si vous en avez plusieurs | le premier |
+| `language` | `fr` · `en` · `de` · `es` · `it` · `nl` · `pt` · `pl` | langue du profil Home Assistant |
 
 Quatre onglets :
 

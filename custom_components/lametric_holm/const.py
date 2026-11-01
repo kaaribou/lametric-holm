@@ -1,6 +1,6 @@
 """Constantes de HOLM LaMetric."""
 DOMAIN = "lametric_holm"
-VERSION = "1.1.1"
+VERSION = "1.2.0"
 OFFICIAL_DOMAIN = "lametric"
 
 CONF_HOST = "host"

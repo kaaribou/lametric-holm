@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+- **8 langues** : traductions allemand, espagnol, italien, néerlandais, portugais et polonais ajoutées (configuration, options, entités, actions), en plus du français et de l'anglais. Carte HOLM LaMetric traduite elle aussi (éditeur compris), avec une nouvelle option `language` ; elle suit sinon la langue du profil Home Assistant (anglais si la langue n'est pas traduite).
+- README en anglais (`README.en.md`).
+
 ## 1.1.1
 
 - **iPhone / iPad : la page ne remonte plus toute seule.** Quand la carte se redessinait (à chaque mise à jour du LaMetric, toutes les 30 s, ou à chaque réglage), la page pouvait remonter d'un coup sur iOS (Safari et application Home Assistant). La carte garde maintenant sa hauteur pendant qu'elle se redessine, et la position de défilement est conservée.
