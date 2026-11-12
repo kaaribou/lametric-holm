@@ -192,7 +192,7 @@
         },
         "frames": {
           "name": "Bildschirme",
-          "description": "Liste von Bildschirmen: {text, icon}, {type: goal, entity, end}, {type: chart, entity, hours}…"
+          "description": "Liste von Bildschirmen: (text, icon), (type: goal, entity, end), (type: chart, entity, hours)…"
         },
         "priority": {
           "name": "Priorität",

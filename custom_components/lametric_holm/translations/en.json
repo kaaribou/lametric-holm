@@ -192,7 +192,7 @@
         },
         "frames": {
           "name": "Frames",
-          "description": "List of frames: {text, icon}, {type: goal, entity, end}, {type: chart, entity, hours}…"
+          "description": "List of frames: (text, icon), (type: goal, entity, end), (type: chart, entity, hours)…"
         },
         "priority": {
           "name": "Priority",

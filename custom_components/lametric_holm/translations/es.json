@@ -192,7 +192,7 @@
         },
         "frames": {
           "name": "Pantallas",
-          "description": "Lista de pantallas: {text, icon}, {type: goal, entity, end}, {type: chart, entity, hours}…"
+          "description": "Lista de pantallas: (text, icon), (type: goal, entity, end), (type: chart, entity, hours)…"
         },
         "priority": {
           "name": "Prioridad",

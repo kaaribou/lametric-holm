@@ -192,7 +192,7 @@
         },
         "frames": {
           "name": "Schermate",
-          "description": "Elenco di schermate: {text, icon}, {type: goal, entity, end}, {type: chart, entity, hours}…"
+          "description": "Elenco di schermate: (text, icon), (type: goal, entity, end), (type: chart, entity, hours)…"
         },
         "priority": {
           "name": "Priorità",

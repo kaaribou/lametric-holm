@@ -192,7 +192,7 @@
     },
     "frames": {
      "name": "Écrans",
-     "description": "Liste d'écrans : {text, icon}, {type: goal, entity, end}, {type: chart, entity, hours}…"
+     "description": "Liste d'écrans : (text, icon), (type: goal, entity, end), (type: chart, entity, hours)…"
     },
     "priority": {
      "name": "Priorité",
